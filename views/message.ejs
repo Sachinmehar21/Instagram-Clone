@@ -1,0 +1,83 @@
+<% include ./partials/header.ejs %>
+    <div class="w-full min-h-screen bg-zinc-900 px-4 py-5 ">
+        <h1 class="text-white text-center border-b pb-2 capitalize">Messages
+        </h1>
+        <div class="search flex mt-5 justify-between items-center">
+            <a class="" href="/feed">
+                <i class="text-white ri-arrow-left-line  text-2xl "></i>
+            </a>
+            <div
+                class="border-2 w-[90%]  border-zinc-800 flex-shrink-0 flex items-center justify-between px-2 py-1 rounded-md ">
+                <i class="text-white ri-search-line"></i>
+                <input id="search" class="searchBar ml-1 w-full bg-zinc-900 outline-none text-zinc-400" type="text"
+                    placeholder="search username">
+            </div>
+        </div>
+        <div class="users">
+            <%displayUser.forEach(function(chatUser){%>
+                <div class="user flex justify-between items-center w-full mt-5">
+                    <a href="/openChat/<%=chatUser.username%>" class="outline-none w-full">
+                        <div class="text-white flex items-center gap-3 ">
+                            <div class="image w-[11vw] h-[11vw] rounded-full  bg-sky-100 overflow-hidden">
+                                <img class="h-ful w-full object-cover" src="/images/uploads/<%=chatUser.profileImg%>"
+                                    alt="">
+                            </div>
+                            <div class="text-lg font-medium -mt-1">
+                                <h3>
+                                    <%=chatUser.username%>
+                                </h3>
+                                <h4 class="text-sm opacity-30 leading-none">
+                                    last message
+                                </h4>
+                            </div>
+                        </div>
+                    </a>
+
+                </div>
+                <%})%>
+        </div>
+    </div>
+
+
+
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.5/axios.min.js"
+        integrity="sha512-TjBzDQIDnc6pWyeM1bhMnDxtWH0QpOXMcVooglXrali/Tj7W569/wd4E8EDjk1CwOAOPSJon1VfcEt1BI4xIrA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script>
+        var socket = io();
+        socket.emit('join-server','<%=user.username%>')
+
+        
+        document.querySelector(".searchBar").addEventListener("input", function(e){
+        if(e.target.value != ''){
+            fetch(`/search/${e.target.value}`)
+            .then((res) => res.json())
+            .then(result =>{
+                var clutter = ``;
+                result.forEach(user => {
+                    if (user.username !== '<%= user.username %>') {
+                   clutter  += `<a href="/openChat/${user.username}" class="outline-none">
+            <div class="text-white flex items-center gap-3 mt-5">
+                <div class="image w-[11vw] h-[11vw] rounded-full bg-sky-100 overflow-hidden">
+        <img class="h-full w-full object-cover" src="/images/uploads/${user.profileImg}" alt="">
+                    </div>
+                <div class="text-lg font-medium -mt-1">
+                                <h3>
+                                    ${user.username}
+                                </h3>
+                                <h4 class="text-sm opacity-30 leading-none">
+                                    last message
+                                </h4>
+                            </div>
+            </div>            
+        </a>`
+            }});
+                document.querySelector('.users').innerHTML = clutter
+            });
+        }
+    })
+
+    </script>
+    <% include ./partials/footer.ejs %>

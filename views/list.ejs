@@ -1,0 +1,121 @@
+<% include ./partials/header.ejs %>
+    <div class="w-full min-h-screen bg-zinc-900 px-4 py-5 ">
+        <h1 class="text-white text-center border-b pb-2 capitalize">
+            <%= basis %>
+        </h1>
+        <div class="search flex mt-5 justify-between items-center">
+            <a class="" href="javascript:history.back()">
+                <i class="text-white ri-arrow-left-line  text-2xl "></i>
+            </a>
+            <div
+                class="border-2 w-[90%]  border-zinc-800 flex-shrink-0 flex items-center justify-between px-2 py-1 rounded-md ">
+                <i class="text-white ri-search-line"></i>
+                <input id="search" data-userid="<%=otherUser._id%>" data-loggin="<%=user._id%>" data-basis="<%=basis%>"
+                    class="ml-1 w-full bg-zinc-900 outline-none text-zinc-400" type="text"
+                    placeholder="search username">
+            </div>
+        </div>
+        <div class="users">
+            <%uniqueUsers.forEach(function(otherUser){%>
+                <div class="user flex justify-between items-center w-full mt-5 ">
+                    <a href="/profile/<%=otherUser.username%>" class="outline-none">
+                        <div class="text-white flex items-center gap-2">
+                            <div class="image w-[11vw] h-[11vw] rounded-full bg-sky-100 overflow-hidden">
+                                <img class="h-ful w-full object-cover" src="/images/uploads/<%=otherUser.profileImg%>"
+                                    alt="">
+                            </div>
+                            <div class="text -mt-1">
+                                <h3>
+                                    <%=otherUser.username%>
+                                </h3>
+                                <h4 class="text-xs opacity-30 leading-none">
+                                    <%=otherUser.name%>
+                                </h4>
+                            </div>
+                        </div>
+                    </a>
+                    <a href="/follow/<%=otherUser._id%>">
+                        <button class="px-6 py-1.5 bg-blue-500 rounded text-white font-medium">
+                            follow
+                        </button>
+                    </a>
+                </div>
+                <%})%>
+                    <%commonUsers.forEach(function(otherUser){%>
+                        <div class="user flex justify-between items-center w-full mt-5 ">
+                            <a href="/profile/<%=otherUser.username%>" class="outline-none">
+                                <div class="text-white flex items-center gap-2">
+                                    <div class="image w-[11vw] h-[11vw] rounded-full bg-sky-100 overflow-hidden">
+                                        <img class="h-ful w-full object-cover"
+                                            src="/images/uploads/<%=otherUser.profileImg%>" alt="">
+                                    </div>
+                                    <div class="text -mt-1">
+                                        <h3>
+                                            <%=otherUser.username%>
+                                        </h3>
+                                        <h4 class="text-xs opacity-30 leading-none">
+                                            <%=otherUser.name%>
+                                        </h4>
+                                    </div>
+                                </div>
+                            </a>
+                            <a href="/follow/<%=otherUser._id%>">
+                                <button class="px-6 py-1.5 bg-zinc-800 rounded text-white font-medium">
+
+                                    Remove
+                                </button>
+                            </a>
+                        </div>
+                        <%})%>
+        </div>
+    </div>
+
+
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.5/axios.min.js"
+        integrity="sha512-TjBzDQIDnc6pWyeM1bhMnDxtWH0QpOXMcVooglXrali/Tj7W569/wd4E8EDjk1CwOAOPSJon1VfcEt1BI4xIrA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script>
+
+
+        var user = document.querySelector("#search").dataset
+        var basis = user.basis === 'followers' ? 'following': 'followers';
+        document.querySelector("#search").addEventListener("input", function (dets) {
+            if (dets.target.value != '') {
+                fetch(`/search/${dets.target.value}`)
+                    .then(raw => raw.json())
+                    .then(function (data) {
+                        clutter = ``
+                        data.forEach( e => {
+                            if(e[basis].includes(user.userid)){
+                                clutter += `
+                             <div class="user flex justify-between items-center w-full mt-5 ">
+                                <a href="/profile/${e.username}" class="outline-none">
+                                    <div class="text-white flex items-center gap-2 ">
+                                        <div class="image w-[11vw] h-[11vw] rounded-full bg-sky-100 overflow-hidden">
+                                            <img class="h-ful w-full object-cover" src="/images/uploads/${e.profileImg}" alt="">
+                                        </div>
+                                        <div class="text -mt-1">
+                                            <h3>${e.username}</h3>
+                                            <h4 class="text-xs opacity-30 leading-none">${e.name}</h4>
+                                        </div>
+                                    </div>    
+                                </a> 
+                                <a href="/follow/<%=otherUser._id%>">
+                                    <button class="px-6 py-1.5  rounded text-white font-medium ${  e._id === user.loggin ? 'hidden">' : e.followers.includes(user.loggin) ? 'bg-zinc-800">Remove' : 'bg-blue-500">follow' }
+                                           
+                                    </button>
+                                </a>
+                            </div>
+                                    `
+                                }
+                                
+                        });
+                        document.querySelector(".users").innerHTML = clutter;
+                    })
+            }
+        })
+
+    </script>
+    <% include ./partials/footer.ejs %>

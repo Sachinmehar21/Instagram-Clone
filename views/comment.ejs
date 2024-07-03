@@ -1,0 +1,90 @@
+<% include ./partials/header.ejs %>
+    <div class="w-full min-h-screen bg-zinc-900 text-white">
+        <h1 class="text-center bg-zinc-800 py-5 text-xl font-semibold fixed top-0 left-0 w-full">Comments</h1>
+        <a href="javascript:history.back()"><i class="ri-arrow-left-line text-white absolute text-2xl left-5 top-5 z-10"></i></a>
+ 
+        <div class="comments pt-24 pb-16 px-3 overflow-y-auto">
+
+
+            <% comments.forEach(function(com){ %>
+                <div class="comment flex gap-5 py-2">
+                    <img class="h-12 rounded-full object-cover aspect-square bg-red-500 mt-2 "
+                        src="/images/uploads/<%= com.user.profileImg%>" alt="">
+                    <div class="content ">
+                        <h5 class="font-semibold">
+                            <%= com.user.username%> <span class="ml-1 text-[3vw] opacity-50">
+                                    <%=com.date%>
+                                </span>
+                        </h5>
+                        <h2>
+                            <%= com.comment%>
+                        </h2>
+                        <p class="reply text-[3vw] opacity-60" data-id="<%=com._id%>">reply</p>
+
+                        <% if(com.reply.length !==0){%>
+                            <h3 class="viewReply text-[3vw] mt-3 flex gap-2 items-center text-white "
+                                data-commentid="<%= com._id%>">
+                                <hr class="w-10 bg-white pointer-events-none"><span class="pointer-events-none">View
+                                    <%=com.reply.length%> reply</span>
+                            </h3>
+                            <%}%>
+                    </div>
+                </div>
+                <%})%>
+        </div>
+        <form action="/comments/<%= postId %>" method="post"
+            class="commentBox px-4 bg-zinc-900 border-t fixed bottom-0 py-2 flex items-center w-full">
+            <div class="w-[11vw] aspect-square bg-sky-100 rounded-full overflow-hidden mr-3">
+                <img class="h-full w-full object-cover" src="/images/uploads/<%=user.profileImg%>" alt="">
+            </div>
+            <input type="text" name="comment" placeholder="Add a Comment"
+                class="input-com text-lg bg-transparent w-full p-2 outline-none focus-none">
+            <input type="radio" hidden name="type" value="comment" checked id="inp-comment">
+            <input type="radio" hidden name="type" value="reply" id="inp-reply">
+            <button type="submit" class="p-1 text-lg text-white font-semibold"><i
+                    class="ri-send-plane-2-fill"></i></button>
+        </form>
+    </div>
+
+    <script>
+        var replyLength = 0;
+        document.querySelector('.comments').addEventListener("click", function (dets) {
+            if (dets.target.classList.contains('reply')) {
+                document.querySelector('#inp-reply').click();
+                document.querySelector('.input-com').focus();
+                document.querySelector('.input-com').placeholder = 'Add a reply';
+                document.querySelector('#inp-reply').value = dets.target.dataset.id;
+            }
+            else if (dets.target.classList.contains('viewReply')) {
+                const replyDiv = document.createElement('div');
+                replyDiv.className = 'replies'
+                    fetch(`/reply/${dets.target.dataset.commentid}`)
+                        .then(raw => raw.json())
+                        .then(function (replies) {
+                            replyLength = replies.length;
+                            replies.forEach(reply => {
+                                replyDiv.innerHTML += `<div class="flex gap-5 py-2">
+                <img class="h-12 rounded-full object-cover aspect-square bg-red-500 mt-2 " src="/images/uploads/${reply.user.profileImg}" alt="">
+                <div class="content ">
+                    <h5 class="font-semibold">${reply.user.username}<span class="ml-1 text-[3vw] opacity-50" >3d</span></h5>
+                    <h2>${reply.comment}</h2>
+                </div>
+                </div>
+            `
+                            });
+                            dets.target.parentNode.insertBefore(replyDiv, dets.target);
+                            dets.target.innerHTML = `<hr class="w-10 bg-white pointer-events-none"><span class="pointer-events-none">Hide replies</span>`
+                            dets.target.className = 'hideReply text-[3vw] mt-3 flex gap-2 items-center text-white '
+                        })
+
+                }
+                else if(dets.target.classList.contains('hideReply')) {
+                    dets.target.parentNode.removeChild(dets.target.parentNode.querySelector('.replies'));
+                    dets.target.innerHTML = `<hr class="w-10 bg-white pointer-events-none"><span class="pointer-events-none">View ${replyLength} reply</span>`
+                            dets.target.className = 'viewReply text-[3vw] mt-3 flex gap-2 items-center text-white '
+                        
+                }
+        })
+
+    </script>
+    <% include ./partials/footer.ejs %>

@@ -1,0 +1,76 @@
+<% include ./partials/header.ejs %>
+
+    <div class="h-screen w-full bg-zinc-900 relative z-0">
+        <div class="time flex flex-shrink-0 gap-[1px]">
+            <% storyUser.stories.reverse().forEach(function(story,index) { %>
+                <div data-count="<%=storyUser.stories.length%>"
+                    class="timer relative z-2 rounded-full overflow-hidden h-1 bg-[rgb(1,1,1,.7)] w-full ">
+                    <div class="fill bg-white h-full w-0 relative z-2"></div>
+                </div>
+                <img data-date="<%=story.date%>" data-index="<%=index%>"
+                    class="img<%=index%> img w-full h-full absolute top-0 left-0 object-cover z-[-1]"
+                    src="/images/uploads/<%= story.storyImg %>" alt="">
+                <% }) %>
+        </div>
+        <div class="flex justify-between items-center pr-3 relative">
+            <div class="user flex items-center gap-2 w-full px-3 py-4 text-white">
+                <img class="rounded-full h-8 aspect-square bg-blue-500" src="/images/uploads/<%=storyUser.profileImg%>"
+                    alt="">
+                <h1 class=" font-semibold">
+                    <%=storyUser.username%>
+                </h1>
+                <p class="text-sm ">3hr</p>
+            </div>
+            <a href="/feed"><i class="ri-close-fill text-white font-semibold text-3xl"></i></a>
+        </div>
+    </div>
+
+    <script>
+
+        var timerArray = document.querySelectorAll(".timer");
+        var currentStoryInterval;
+        var currentIndex;
+        timerArray.forEach(function (timer) {
+            timer.style.width = `calc(100%/${timer.dataset.count})`;
+        });
+        function runTimer(index) {
+            currentIndex = index;
+            if (index >= timerArray.length) {
+                document.querySelector("a").click();
+                return;
+            }
+            document.querySelector('p').textContent = document.querySelector(`.img${timerArray.length - index - 1}`).dataset.date
+            var count = 0;
+
+            currentStoryInterval = setInterval(function () {
+                if (count === 101) {
+                    clearInterval(currentStoryInterval);
+                    setTimeout(function () {
+                        if(index !== timerArray.length-1){
+                        document.querySelector(`.img${timerArray.length - index - 1}`).style.display = "none";
+                        }
+                        runTimer(index + 1);
+                    }, 600);
+                } else {
+                    timerArray[index].querySelector(".fill").style.width = count + '%';
+                    count++;
+                }
+            }, 60);
+        }
+        runTimer(0);
+        var images = document.querySelectorAll('.img');
+        images.forEach(function (image) {
+            image.addEventListener('click', function () {
+                if(currentIndex !== timerArray.length -1){
+                    document.querySelector(`.img${timerArray.length - currentIndex - 1}`).style.display = "none";
+                }
+                timerArray[currentIndex].querySelector(".fill").style.width = '100%';
+                clearInterval(currentStoryInterval);
+                runTimer(currentIndex + 1);
+            });
+        });
+
+
+    </script>
+
+    <% include ./partials/footer.ejs %>

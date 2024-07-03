@@ -1,0 +1,103 @@
+<% include ./partials/header.ejs %>
+    <div class="flex flex-col h-screen bg-zinc-800">
+        <div class="border-b p-4 text-white flex gap-2 items-center">
+            <a class="" href="javascript:history.back()">
+                <i class="text-white ri-arrow-left-line  text-2xl "></i>
+            </a>
+            <img class="h-10 aspecet-square object-cover rounded-full" src="/images/uploads/<%=chatUser.profileImg%>"
+                alt="">
+            <h1 class="text-xl font-semibold">
+                <%=chatUser.username%>
+            </h1>
+        </div>
+        <div class="flex-1 overflow-y-auto px-3 pt-3">
+            <div class="chatting-area">
+
+                <% messages.forEach(function(message) {%>
+                    <% if(message.sender !==user.username) {%>
+                        <% if(message.post){%>
+                            <a href="/openPost/<%=message.post._id%>">
+                            <div class="mb-[1.5vw] recieving-msg text-white w-[70%] bg-zinc-700  break-normal hyphens-auot rounded-2xl">
+                                <h1 class="px-3 py-2 font-medium text-lg flex gap-2 items-center"> <img
+                                        class='h-8 aspect-square rounded-full object-cover'
+                                        src="/images/uploads/<%=message.post.user.profileImg%>"
+                                        alt=""><%=message.post.user.username%></h1>
+                                <img class="h-[30vh] w-full object-cover"
+                                    src="/images/uploads/<%=message.post.postImg%>"
+                                    alt="">
+                                <p class="p-2 px-3"><%=message.post.caption.substring(0,20)%></p>
+                            </div>
+                        </a>
+                        <%}else{%>
+                            <div class="mb-[1.5vw] receiving-msg text-white max-w-[80%] w-fit bg-zinc-700 px-[4.5vw] py-2 break-normal hyphens-auot rounded-3xl">
+                            <%=message.message %>
+                            </div>
+                        <%}%>
+                    <%}else{%>
+                        <% if(message.post){%>
+                            <a href="/openPost/<%=message.post._id%>">
+                                <div class="mb-[1.5vw] sending-msg  ml-auto text-white w-[70%] bg-zinc-700  break-normal hyphens-auot rounded-2xl">
+                                    <h1 class="px-3 py-2 font-medium text-lg flex gap-2 items-center"> <img
+                                            class='h-8 aspect-square rounded-full object-cover'
+                                            src="/images/uploads/<%=message.post.user.profileImg%>"
+                                            alt=""><%=message.post.user.username%></h1>
+                                    <img class="h-[30vh] w-full object-cover"
+                                        src="/images/uploads/<%=message.post.postImg%>"
+                                        alt="">
+                                    <p class="p-2 px-3"><%=message.post.caption.substring(0,20)%></p>
+                                </div>
+                            </a>
+                        <%}else{%>
+                        <div class="mb-[1.5vw] sending-msg text-white max-w-[80%] w-fit ml-auto bg-blue-500 px-[4.5vw] py-2 break-normal hyphens-auot rounded-3xl">
+                            <%=message.message %>
+                        </div>
+                        <%}%>
+                    <%}%>
+                <%})%>
+
+
+            </div>
+        </div>
+        <div class="p-4 flex items-center">
+            <input type="text"
+                class="message outline-none border pl-5 pr-8 text-white border-white rounded-3xl p-3 bg-transparent w-full max-w-full break-all"
+                placeholder="Type your message...">
+            <i onclick="appendSendingMessage()" class="text-white text-xl right-7 absolute ri-send-plane-2-line"></i>
+        </div>
+
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        var socket = io();
+        socket.emit('join-server', '<%=user.username%>')
+
+        function appendSendingMessage() {
+            let message = document.querySelector('.message')
+            if (message.value != ``) {
+                document.querySelector('.chatting-area').innerHTML += `<div
+                    class="mb-[1.5vw] reciving-msg text-white max-w-[80%] w-fit ml-auto bg-blue-500 px-[4.5vw] py-2 break-normal hyphens-auot rounded-3xl">
+                    ${message.value}</div>`
+
+                socket.emit('user-sending-msg', { sender: '<%=user.username%>', reciever: '<%=chatUser.username%>', message: message.value })
+                message.value = ``;
+            }
+        }
+        socket.on('user-received-msg', messageObj => {
+            if (messageObj.sender === '<%=chatUser.username%>') {
+                document.querySelector('.chatting-area').innerHTML += `<div
+                    class="mb-[1.5vw] reciving-msg text-white max-w-[80%] w-fit bg-zinc-700 px-[4.5vw] py-2 break-normal hyphens-auot rounded-3xl">
+                    ${messageObj.message}</div>`
+            }
+        })
+
+
+      
+
+
+
+    </script>
+
+
+
+    <% include ./partials/footer.ejs %>
